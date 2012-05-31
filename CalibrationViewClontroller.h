@@ -9,7 +9,9 @@
     cv::vector<cv::vector<cv::Point2f> > _imagePoints[2];
     cv::vector<cv::vector<cv::Point3f> > _objectPoints;
     cv::Size _boardSize;
+    cv::Size _imageSize;
     int _imageCount;
+    int _otherImageCount;
     bool _notCapturing;
     SessionManager* _sessionManager;
 }

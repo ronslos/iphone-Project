@@ -45,8 +45,9 @@
     }
 #endif
     _notCapturing = YES;
-     _boardSize = cv::Size(6,9);
-    _imageCount = 1;
+     _boardSize = cv::Size(9,6);
+    _imageCount = 0;
+    _otherImageCount = 0;
     _imagePoints[0].resize(MAX_CALIBRATION_IMAGES);
     _imagePoints[1].resize(MAX_CALIBRATION_IMAGES);
     _sessionManager = [SessionManager instance];
@@ -130,7 +131,6 @@
             [self showCaptureOnScreen];
         });
         dispatch_release(myQueue);
-        
     }
     else
     {
@@ -144,14 +144,15 @@
     cv::Mat grayFrame, cornersImg;
     // Convert captured frame to grayscale
     cv::cvtColor(_lastFrame, grayFrame, CV_RGB2GRAY);
+    _imageSize = grayFrame.size();
 
     if(StereoCalib(grayFrame ,_boardSize,_imagePoints,_imageCount,cornersImg))
     {
-        NSData* data = [self dataFromVector: &_imagePoints[0][_imageCount-1]];
+        NSData* data = [self dataFromVector: &_imagePoints[0][_imageCount]];
         [_sessionManager sendDataToPeers:NULL WithData:data];
+        _imageCount++;
     }
     UIImage * corners = ([UIImage imageWithCVMat:cornersImg]);
-    
     
     
     return  corners;
@@ -160,8 +161,15 @@
 
 - (IBAction)Calibrate:(id)sender
 {
+    if( _imageCount != _otherImageCount)
+    {
+        _imageCount = 0;
+        _otherImageCount =0;
+        return;
+        
+    }
     _objectPoints.resize(_imageCount);
-    double rms =  calibrateCameras( _boardSize,_imagePoints, _objectPoints, _imageCount);
+    double rms =  calibrateCameras( _boardSize,_imagePoints, _objectPoints, _imageCount , _imageSize);
 }
 
 -(NSData*) dataFromVector:(cv::vector<cv::Point2f>*) vector
@@ -211,9 +219,8 @@
     }
     else
     {
-        sleep(2);
-        [self fillVectorFromData:data :&(_imagePoints[1][_imageCount-1]) ];
-        _imageCount++;
+        [self fillVectorFromData:data :&(_imagePoints[1][_otherImageCount]) ];
+        _otherImageCount ++ ; 
     }
 }
 @end

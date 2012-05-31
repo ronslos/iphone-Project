@@ -19,7 +19,7 @@ bool StereoCalib(cv::Mat img , cv::Size boardSize,cv::vector<cv::vector<cv::Poin
     // ARRAY AND VECTOR STORAGE:
     
             bool found = false;
-            vector<Point2f>& corners = imagePoints[0][numImage-1];
+            vector<Point2f>& corners = imagePoints[0][numImage];
             for( int scale = 1; scale <= maxScale; scale++ )
             {
                 Mat timg;
@@ -58,12 +58,16 @@ bool StereoCalib(cv::Mat img , cv::Size boardSize,cv::vector<cv::vector<cv::Poin
 
 }
 
-double calibrateCameras( cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> >(& imagePoints)[2], cv::vector<cv::vector<cv::Point3f> >& objectPoints, int numImage)
+double calibrateCameras( cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> >(& imagePoints)[2], cv::vector<cv::vector<cv::Point3f> >& objectPoints, int numImage , cv::Size imageSize)
 {
+    
+    imagePoints[0].resize(numImage);
+    imagePoints[1].resize(numImage);
+    objectPoints.resize(numImage);
     
     const float squareSize = 1.f;  // Set this to your actual square size
     int i , j , k;
-    
+
     for( i = 0; i < numImage; i++ )
     {
         for( j = 0; j < boardSize.height; j++ )
@@ -71,11 +75,7 @@ double calibrateCameras( cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> >
                 objectPoints[i].push_back(Point3f(j*squareSize, k*squareSize, 0));
     }
 
-    imagePoints[0].resize(numImage);
-    imagePoints[1].resize(numImage);
-    objectPoints.resize(numImage);
     
-    cv::Size imageSize;
     Mat cameraMatrix[2], distCoeffs[2];
     cameraMatrix[0] = Mat::eye(3, 3, CV_64F);
     cameraMatrix[1] = Mat::eye(3, 3, CV_64F);
