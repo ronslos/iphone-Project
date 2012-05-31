@@ -1,21 +1,8 @@
-//
-//  OpenCVClientViewController.h
-//  OpenCVClient
-//
-//  Created by Robin Summerhill on 02/09/2011.
-//  Copyright 2011 Aptogo Limited. All rights reserved.
-//
-//  Permission is given to use this source code file without charge in any
-//  project, commercial or otherwise, entirely at your risk, with the condition
-//  that any redistribution (in part or whole) of source code must retain
-//  this copyright and permission notice. Attribution in compiled projects is
-//  appreciated but not required.
-//
-
 #import <UIKit/UIKit.h>
+#import "SessionManager.h"
 
 
-@interface CalibrationViewController : UIViewController
+@interface CalibrationViewController : UIViewController <GKPeerPickerControllerDelegate>
 {
     cv::VideoCapture *_videoCapture;
     cv::Mat _lastFrame;
@@ -23,12 +10,18 @@
     cv::vector<cv::vector<cv::Point3f> > _objectPoints;
     cv::Size _boardSize;
     int _imageCount;
+    bool _notCapturing;
+    SessionManager* _sessionManager;
 }
 
 @property (nonatomic, retain) IBOutlet UIImageView *imageView;
+@property (nonatomic, retain) IBOutlet UILabel  *timeLabel;
+@property (nonatomic, retain) IBOutlet UIButton *captureBtn;
 
-- (IBAction)capture:(id)sender;
-- (IBAction)sliderChanged:(id)sender;
+- (IBAction)capturePressed:(id)sender;
+- (void) capture;
 - (IBAction)Calibrate:(id)sender;
+- (void) showCaptureOnScreen;
+
 
 @end

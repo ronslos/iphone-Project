@@ -10,23 +10,31 @@
 
 #import "CalibrationViewClontroller.h"
 
+#import "MainMenuViewController.h"
+
+#import "SessionManager.h"
+
 @implementation AppDelegate
 
 @synthesize window = _window;
-@synthesize viewController = _viewController;
-
 - (void)dealloc
 {
+    [navigationController release];
     [_window release];
+    [[SessionManager instance] release];
     [super dealloc];
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-        // Override point for customization after application launch.
     
-    self.window.rootViewController = self.viewController;
+    MainMenuViewController * mainMenuViewController = [[MainMenuViewController alloc] init];
+    navigationController = [[UINavigationController alloc] init];
+    [navigationController pushViewController:mainMenuViewController animated:NO];
+    [self.window addSubview:navigationController.view];
     [self.window makeKeyAndVisible];
+  
+    [mainMenuViewController release];  
     return YES;
 }
 

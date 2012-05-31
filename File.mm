@@ -18,11 +18,8 @@ bool StereoCalib(cv::Mat img , cv::Size boardSize,cv::vector<cv::vector<cv::Poin
    
     // ARRAY AND VECTOR STORAGE:
     
-    int k;
-        for(k = 0; k < 2; k++ )
-        {
             bool found = false;
-            vector<Point2f>& corners = imagePoints[k][numImage-1];
+            vector<Point2f>& corners = imagePoints[0][numImage-1];
             for( int scale = 1; scale <= maxScale; scale++ )
             {
                 Mat timg;
@@ -56,14 +53,9 @@ bool StereoCalib(cv::Mat img , cv::Size boardSize,cv::vector<cv::vector<cv::Poin
                     //exit(-1);
             }
             if( !found )
-                break;
+                return false;
             cornerSubPix(img, corners, cv::Size(11,11), cv::Size(-1,-1),TermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS,30, 0.01));
-        }
-    if(k==2)
-    {
-        return true;
-    }
-    return false;
+
 }
 
 double calibrateCameras( cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> >(& imagePoints)[2], cv::vector<cv::vector<cv::Point3f> >& objectPoints, int numImage)

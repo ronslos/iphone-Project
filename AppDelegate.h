@@ -8,11 +8,13 @@
 
 #import <UIKit/UIKit.h>
 @class CalibrationViewController;
+@class MainMenuViewController;
 
 @interface AppDelegate : NSObject <UIApplicationDelegate>
+{
+    UINavigationController * navigationController;
+}
 
 @property (nonatomic, retain) IBOutlet UIWindow *window;
-
-@property (nonatomic, retain) IBOutlet CalibrationViewController *viewController;
 
 @end
