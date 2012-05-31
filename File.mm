@@ -92,6 +92,53 @@ double calibrateCameras( cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> >
                                  CV_CALIB_RATIONAL_MODEL +
                                  CV_CALIB_FIX_K3 + CV_CALIB_FIX_K4 + CV_CALIB_FIX_K5);
     
+    NSMutableArray *Rarray = [NSMutableArray arrayWithCapacity:9];
+    NSNumber* matElemnt;
+    for (int i=0 ; i<9 ; i++)
+    {
+        matElemnt = [NSNumber numberWithDouble:R.at<double>(i/3,i%3)];
+        [Rarray insertObject:matElemnt atIndex:i];
+        cout << "double" << R.at<double>(i/3,i%3) <<endl;
+    }
+    [[NSUserDefaults standardUserDefaults] setObject:Rarray forKey:@"Rarray"];   
+    
+    
+    NSMutableArray *Tarray = [NSMutableArray arrayWithCapacity:3];
+    
+    for (int i=0 ; i<3 ; i++)
+    {
+        matElemnt = [NSNumber numberWithDouble:T.at<double>(i/3,i%3)];
+        [Tarray insertObject:matElemnt atIndex:i];
+        cout << "double" << T.at<double>(0,i) <<endl;
+    }
+    [[NSUserDefaults standardUserDefaults] setObject:Tarray forKey:@"Tarray"];   
+    
+    
+    NSMutableArray *Earray = [NSMutableArray arrayWithCapacity:9];
+    
+    for (int i=0 ; i<9 ; i++)
+    {
+        matElemnt = [NSNumber numberWithDouble:R.at<double>(i/3,i%3)];
+        [Earray insertObject:matElemnt atIndex:i];
+        cout << "double" << E.at<double>(i/3,i%3) <<endl;
+    }
+    [[NSUserDefaults standardUserDefaults] setObject:Earray forKey:@"Earray"];  
+    
+    
+    NSMutableArray *Farray = [NSMutableArray arrayWithCapacity:9];
+    
+    for (int i=0 ; i<9 ; i++)
+    {
+        matElemnt = [NSNumber numberWithDouble:F.at<double>(i/3,i%3)];
+        [Farray insertObject:matElemnt atIndex:i];
+        cout << "double" << F.at<double>(i/3,i%3) <<endl;
+    }
+    [[NSUserDefaults standardUserDefaults] setObject:Farray forKey:@"Farray"];   
+    
+    
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    
+    
     return rms;
     
 }

@@ -9,12 +9,22 @@
 #import "MainMenuViewController.h"
 #import "CalibrationViewClontroller.h"
 #import "SessionManager.h"
+#import "SettingsViewController.h"
 
 @interface MainMenuViewController ()
 
 @end
 
 @implementation MainMenuViewController
+
+
+
+- (IBAction)settingsPressed:(id)sender {
+    
+    SettingsViewController* settingsViewController = [[SettingsViewController alloc] init];
+    [self.navigationController pushViewController:settingsViewController animated:YES];
+    [settingsViewController release];
+}
 
 -(IBAction)calibratePressed:(id)sender
 {
@@ -40,11 +50,12 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    // Do any additional setup after loading the view from its nib.
+    //Do any additional setup after loading the view from its nib.
 }
 
 - (void)viewDidUnload
 {
+
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
@@ -57,4 +68,8 @@
 
 
 
+- (void)dealloc {
+
+    [super dealloc];
+}
 @end

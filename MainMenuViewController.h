@@ -8,12 +8,15 @@
 
 #import <UIKit/UIKit.h>
 #import "SessionManager.h"
+
 @interface MainMenuViewController : UIViewController 
+
 {
     SessionManager* _sessionManager;
 }
 
+- (IBAction)settingsPressed:(UIButton*)sender;
+-(IBAction)calibratePressed:(UIButton*)sender;
+-(IBAction)connectDevicePressed:(UIButton*)sender;
 
--(IBAction)calibratePressed:(id)sender;
--(IBAction)connectDevicePressed:(id)sender;
 @end
