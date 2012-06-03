@@ -14,6 +14,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #import "UIImage+OpenCV.h"
+#import "manageCVMat.h"
 
 
 #include <vector>
@@ -26,6 +27,6 @@
 #include <ctype.h>
 
 bool StereoCalib(cv::Mat img , cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> > (&imagePoints)[2], int numImage , cv::Mat& cornersImg);
-double calibrateCameras( cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> >(& imagePoints)[2], cv::vector<cv::vector<cv::Point3f> >& objectPoints, int numImage , cv::Size imageSize);
+double calibrateCameras( cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> >(& imagePoints)[2], cv::vector<cv::vector<cv::Point3f> >& objectPoints, int numImage , cv::Size imageSize , const float squareSize);
 
 #endif

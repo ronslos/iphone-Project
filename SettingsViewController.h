@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface SettingsViewController : UIViewController
+@interface SettingsViewController : UIViewController <UITextFieldDelegate>
 
 @property (retain, nonatomic) IBOutlet UIScrollView *scrollerView;
 @property (retain, nonatomic) IBOutlet UILabel *R1_1;
@@ -41,9 +41,12 @@
 @property (retain, nonatomic) IBOutlet UILabel *F3_1;
 @property (retain, nonatomic) IBOutlet UILabel *F3_2;
 @property (retain, nonatomic) IBOutlet UILabel *F3_3;
-@property (retain, nonatomic) IBOutlet UITextField *boardWidthTextView;
-@property (retain, nonatomic) IBOutlet UITextField *boardHeightTextView;
-@property (retain, nonatomic) IBOutlet UITextField *boardSquareLengthView;
+@property (retain, nonatomic) IBOutlet UITextField *boardWidthText;
+@property (retain, nonatomic) IBOutlet UITextField *boardHeightText;
+@property (retain, nonatomic) IBOutlet UITextField *squareSizeText;
+- (IBAction)saveBoardWidth:(UITextField*)sender;
+- (IBAction)saveBoardHeight:(UITextField*)sender;
+- (IBAction)saveSquareSize:(UITextField*)sender;
 
 
 @end

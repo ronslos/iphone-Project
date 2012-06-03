@@ -10,6 +10,7 @@
     cv::vector<cv::vector<cv::Point3f> > _objectPoints;
     cv::Size _boardSize;
     cv::Size _imageSize;
+    float _squareSize;
     int _imageCount;
     int _otherImageCount;
     bool _notCapturing;
@@ -17,8 +18,9 @@
 }
 
 @property (nonatomic, retain) IBOutlet UIImageView *imageView;
-@property (nonatomic, retain) IBOutlet UILabel  *timeLabel;
 @property (nonatomic, retain) IBOutlet UIButton *captureBtn;
+@property (retain, nonatomic) IBOutlet UIActivityIndicatorView *activityIndicator;
+@property (retain, nonatomic) IBOutlet UIButton *calibrationButton;
 
 - (IBAction)capturePressed:(id)sender;
 - (void) capture;

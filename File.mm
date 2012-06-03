@@ -55,17 +55,18 @@ bool StereoCalib(cv::Mat img , cv::Size boardSize,cv::vector<cv::vector<cv::Poin
             if( !found )
                 return false;
             cornerSubPix(img, corners, cv::Size(11,11), cv::Size(-1,-1),TermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS,30, 0.01));
+    return true;
 
 }
 
-double calibrateCameras( cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> >(& imagePoints)[2], cv::vector<cv::vector<cv::Point3f> >& objectPoints, int numImage , cv::Size imageSize)
+double calibrateCameras( cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> >(& imagePoints)[2], cv::vector<cv::vector<cv::Point3f> >& objectPoints, int numImage , cv::Size imageSize , const float squareSize)
 {
     
     imagePoints[0].resize(numImage);
     imagePoints[1].resize(numImage);
     objectPoints.resize(numImage);
     
-    const float squareSize = 1.f;  // Set this to your actual square size
+    //const float squareSize = 1.f;  // Set this to your actual square size
     int i , j , k;
 
     for( i = 0; i < numImage; i++ )
@@ -92,6 +93,18 @@ double calibrateCameras( cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> >
                                  CV_CALIB_RATIONAL_MODEL +
                                  CV_CALIB_FIX_K3 + CV_CALIB_FIX_K4 + CV_CALIB_FIX_K5);
     
+    
+    
+    
+    [manageCVMat storeCVMat:R withKey:@"Rarray"];
+    [manageCVMat storeCVMat:T withKey:@"Tarray"];
+    [manageCVMat storeCVMat:F withKey:@"Farray"];
+    [manageCVMat storeCVMat:E withKey:@"Earray"];
+    
+    
+    
+    
+    /*
     NSMutableArray *Rarray = [NSMutableArray arrayWithCapacity:9];
     NSNumber* matElemnt;
     for (int i=0 ; i<9 ; i++)
@@ -137,7 +150,7 @@ double calibrateCameras( cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> >
     
     
     [[NSUserDefaults standardUserDefaults] synchronize];
-    
+    */
     
     return rms;
     

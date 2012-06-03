@@ -22,13 +22,16 @@
 
 @interface CalibrationViewController()
 - (UIImage*)findCorners;
+-(NSData*) dataFromVector:(cv::vector<cv::Point2f>*) vector;
+
 @end
 
 @implementation CalibrationViewController
 
 @synthesize imageView = _imageView;
-@synthesize timeLabel = _timeLabel;
 @synthesize captureBtn = _captureBtn;
+@synthesize activityIndicator = _activityIndicator;
+@synthesize calibrationButton = _calibrationButton;
 
 - (void)viewDidLoad
 {
@@ -45,7 +48,10 @@
     }
 #endif
     _notCapturing = YES;
-     _boardSize = cv::Size(9,6);
+    int boardWidth = [(NSString*)[[NSUserDefaults standardUserDefaults] objectForKey:@"boardWidth"] intValue];
+    int boardHeight = [(NSString*)[[NSUserDefaults standardUserDefaults] objectForKey:@"boardHeight"] intValue];
+    _squareSize = [(NSString*)[[NSUserDefaults standardUserDefaults] objectForKey:@"squareSize"] floatValue];
+    _boardSize = cv::Size(boardWidth,boardHeight);
     _imageCount = 0;
     _otherImageCount = 0;
     _imagePoints[0].resize(MAX_CALIBRATION_IMAGES);
@@ -53,6 +59,9 @@
     _sessionManager = [SessionManager instance];
     [[_sessionManager mySession ] setDataReceiveHandler:self withContext:nil];
     
+    //[self.activityIndicator setHidden:YES];
+    [self.activityIndicator stopAnimating];
+    [self.activityIndicator setHidesWhenStopped:YES];    
     [self showCaptureOnScreen];
     
     // Load a test image and demonstrate conversion between UIImage and cv::Mat
@@ -67,16 +76,12 @@
     dispatch_queue_t myQueue = dispatch_queue_create("my op thread", NULL);
     
     dispatch_async(myQueue, ^{
-        double t;
         while(_notCapturing){
-            t = (double)cv::getTickCount();
             if (_videoCapture && _videoCapture->grab())
             { 
                 (*_videoCapture) >> _lastFrame;
                 //[self processFrame];
-                t = 1000 * ((double)cv::getTickCount() - t) / cv::getTickFrequency();
                 dispatch_sync(dispatch_get_main_queue(), ^{
-                    self.timeLabel.text = [NSString stringWithFormat:@"%.1fms", t];
                     self.imageView.image = [UIImage imageWithCVMat:_lastFrame]; 
                 });
             }
@@ -91,6 +96,8 @@
 
 - (void)viewDidUnload
 {
+    [self setActivityIndicator:nil];
+    [self setCalibrationButton:nil];
     [super viewDidUnload];
     self.imageView = nil;
 
@@ -119,12 +126,12 @@
 
         _notCapturing = NO;
         (*_videoCapture) >> _lastFrame;
-        _captureBtn.enabled = NO;
+        [self.captureBtn setEnabled:NO];
         dispatch_queue_t myQueue = dispatch_queue_create("my op thread", NULL);
         dispatch_async(myQueue, ^{
             UIImage* corners = [self findCorners];
             dispatch_sync(dispatch_get_main_queue(), ^{
-                _captureBtn.enabled = YES;
+                [self.captureBtn setEnabled:YES];
                 self.imageView.image = corners;
             });
             _notCapturing = YES;
@@ -151,6 +158,7 @@
         NSData* data = [self dataFromVector: &_imagePoints[0][_imageCount]];
         [_sessionManager sendDataToPeers:NULL WithData:data];
         _imageCount++;
+        NSLog(@"own image count is %d",_imageCount);
     }
     UIImage * corners = ([UIImage imageWithCVMat:cornersImg]);
     
@@ -161,6 +169,7 @@
 
 - (IBAction)Calibrate:(id)sender
 {
+    
     if( _imageCount != _otherImageCount)
     {
         _imageCount = 0;
@@ -168,8 +177,27 @@
         return;
         
     }
-    _objectPoints.resize(_imageCount);
-    double rms =  calibrateCameras( _boardSize,_imagePoints, _objectPoints, _imageCount , _imageSize);
+    dispatch_queue_t myQueue = dispatch_queue_create("my calibration thread", NULL);
+    //[self.activityIndicator setHidden:NO];
+    [self.activityIndicator startAnimating];
+    [self.captureBtn setEnabled:NO];
+    [self.calibrationButton setEnabled:NO];
+    dispatch_async(myQueue, ^{
+        _objectPoints.resize(_imageCount);
+        double rms =  calibrateCameras( _boardSize,_imagePoints, _objectPoints, _imageCount , _imageSize ,_squareSize);
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            [self.activityIndicator stopAnimating];
+            NSString* message = [NSString stringWithFormat:@"Calibration Completed with rms %f" ,rms];
+            UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Calibration" message: message delegate:nil cancelButtonTitle:@"Ok" otherButtonTitles:nil, nil];
+            [alert show];
+            [alert release];
+            [self.captureBtn setEnabled:YES];
+            [self.calibrationButton setEnabled:YES];
+        });
+
+    });
+    
+    dispatch_release(myQueue);
 }
 
 -(NSData*) dataFromVector:(cv::vector<cv::Point2f>*) vector
@@ -181,7 +209,6 @@
     {
         [array addObject: [NSNumber numberWithFloat:iter->x]];
         [array addObject: [NSNumber numberWithFloat:iter->y]];
-        NSLog(@"sent: %f %f",iter->x,iter->y);
     }
     
     NSData* data = [NSKeyedArchiver archivedDataWithRootObject:array];
@@ -196,14 +223,11 @@
     NSEnumerator* enumerator = [array objectEnumerator];
     id object;
     while (object = [enumerator nextObject]) {
-        //cv::Point2f* point = new cv::Point2f;
         iter->x = [object floatValue];
         object = [enumerator nextObject];
         iter->y = [object floatValue];
-        NSLog(@"received: %f %f",iter->x,iter->y);
         iter++;
     }
-    NSLog(@"%lu %lu",_imagePoints[0][_imageCount-1].size(),_imagePoints[1][_imageCount-1].size());
 }
 
 
@@ -221,6 +245,15 @@
     {
         [self fillVectorFromData:data :&(_imagePoints[1][_otherImageCount]) ];
         _otherImageCount ++ ; 
+        NSLog(@"Other image count is %d",_otherImageCount);
     }
 }
+- (void)dealloc {
+    [_activityIndicator release];
+    [_calibrationButton release];
+    [_captureBtn release];
+    [super dealloc];
+}
+
+
 @end
