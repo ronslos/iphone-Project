@@ -44,7 +44,13 @@
     _videoCapture = new cv::VideoCapture;
     if (!_videoCapture->open(CV_CAP_AVFOUNDATION))
     {
+                             
         NSLog(@"Failed to open video camera");
+    }
+    else {
+        _videoCapture->set(CV_CAP_PROP_IOS_DEVICE_EXPOSURE, AVCaptureExposureModeContinuousAutoExposure);
+        _videoCapture->set(CV_CAP_PROP_IOS_DEVICE_WHITEBALANCE, AVCaptureWhiteBalanceModeAutoWhiteBalance );
+        _videoCapture->set(CV_CAP_PROP_IOS_DEVICE_FOCUS, AVCaptureFocusModeLocked );
     }
 #endif
     _notCapturing = YES;

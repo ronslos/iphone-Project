@@ -1,5 +1,6 @@
 #import <UIKit/UIKit.h>
 #import "SessionManager.h"
+#import <AVFoundation/AVCaptureDevice.h>
 
 
 @interface CalibrationViewController : UIViewController <GKPeerPickerControllerDelegate>
