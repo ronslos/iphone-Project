@@ -12,6 +12,6 @@
 @interface manageCVMat : NSObject
 
 +(void) storeCVMat: (cv::Mat) mat withKey: (NSString*) key;
-+(cv::Mat) loadCVMat: (cv::Size) size  WithKey: (NSString*) key;
++(cv::Mat*) loadCVMat: (cv::Size) size  WithKey: (NSString*) key;
 
 @end

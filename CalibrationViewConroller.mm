@@ -44,7 +44,6 @@
     _videoCapture = new cv::VideoCapture;
     if (!_videoCapture->open(CV_CAP_AVFOUNDATION))
     {
-                             
         NSLog(@"Failed to open video camera");
     }
     else {

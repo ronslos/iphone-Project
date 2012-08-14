@@ -29,7 +29,7 @@ static SessionManager *gInstance = NULL;
     peerPicker =  [[GKPeerPickerController alloc] init];
     peerPicker.delegate = self;
 
-    peerPicker.connectionTypesMask = GKPeerPickerConnectionTypeNearby;
+    //peerPicker.connectionTypesMask = GKPeerPickerConnectionTypeNearby;
     peers=[[NSMutableArray alloc] init];
     [peerPicker show];
 }

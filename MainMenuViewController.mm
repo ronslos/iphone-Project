@@ -10,6 +10,7 @@
 #import "CalibrationViewClontroller.h"
 #import "SessionManager.h"
 #import "SettingsViewController.h"
+#import "ReconstructionViewController.h"
 
 @interface MainMenuViewController ()
 
@@ -32,6 +33,14 @@
     [self.navigationController pushViewController:calibrationViewController animated:YES];
     [calibrationViewController release];
 }
+
+-(IBAction)reconstructionPressed:(id)sender
+{
+    ReconstructionViewController* reconstructionViewController = [[ReconstructionViewController alloc] init];
+    [self.navigationController pushViewController:reconstructionViewController animated:YES];
+    [ReconstructionViewController release];
+}
+
 -(IBAction)connectDevicePressed:(id)sender
 {
     _sessionManager = [SessionManager instance];

@@ -76,26 +76,31 @@ double calibrateCameras( cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> >
                 objectPoints[i].push_back(Point3f(j*squareSize, k*squareSize, 0));
     }
 
-    
+    // omer - note changes in deffinition of distcoeffs matrix
     Mat cameraMatrix[2], distCoeffs[2];
     cameraMatrix[0] = Mat::eye(3, 3, CV_64F);
     cameraMatrix[1] = Mat::eye(3, 3, CV_64F);
-    Mat R, T, E, F;
+    distCoeffs[0] = Mat::zeros(1, 5, CV_64F);
+    distCoeffs[1] = Mat::zeros(1, 5, CV_64F);
+
     
+    Mat R, T, E, F , TArr , RArr;
+    // omer - note change in flags for calibration function. please use these flags instead of previous.
     double rms = stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
-                                 cameraMatrix[0], distCoeffs[0],
-                                 cameraMatrix[1], distCoeffs[1],
-                                 imageSize, R, T, E, F,
-                                 TermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-5),
-                                 CV_CALIB_FIX_ASPECT_RATIO +
-                                 CV_CALIB_ZERO_TANGENT_DIST +
-                                 CV_CALIB_SAME_FOCAL_LENGTH +
-                                 CV_CALIB_RATIONAL_MODEL +
-                                 CV_CALIB_FIX_K3 + CV_CALIB_FIX_K4 + CV_CALIB_FIX_K5);
+                                            cameraMatrix[0], distCoeffs[0],
+                                            cameraMatrix[1], distCoeffs[1],
+                                            imageSize, R, T, E, F,
+                                            TermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-5),
+                                            CV_CALIB_FIX_ASPECT_RATIO +
+                                            CV_CALIB_ZERO_TANGENT_DIST +
+                                            CV_CALIB_SAME_FOCAL_LENGTH );
     
     
     
-    
+    [manageCVMat storeCVMat:cameraMatrix[0] withKey:@"cameraMatrix1"];
+    [manageCVMat storeCVMat:cameraMatrix[1] withKey:@"cameraMatrix2"];
+    [manageCVMat storeCVMat:distCoeffs[0] withKey:@"distCoeffs1"];
+    [manageCVMat storeCVMat:distCoeffs[1] withKey:@"distCoeffs2"];
     [manageCVMat storeCVMat:R withKey:@"Rarray"];
     [manageCVMat storeCVMat:T withKey:@"Tarray"];
     [manageCVMat storeCVMat:F withKey:@"Farray"];
@@ -155,3 +160,79 @@ double calibrateCameras( cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> >
     return rms;
     
 }
+
+// omer - this function is new. calculates disparity map from left and right images.
+
+void reconstruct(cv::Size imageSize , cv::Mat* img1 , cv::Mat* img2 ,cv::Mat* outImg)
+{
+    cv::Mat M1 = *[manageCVMat loadCVMat:cv::Size(3,3) WithKey:@"cameraMatrix1"];
+    cv::Mat M2 = *[manageCVMat loadCVMat:cv::Size(3,3) WithKey:@"cameraMatrix2"];
+    cv::Mat D1 = *[manageCVMat loadCVMat:cv::Size(1,5) WithKey:@"distCoeffs1"];
+    cv::Mat D2 = *[manageCVMat loadCVMat:cv::Size(1,5) WithKey:@"distCoeffs2"];
+    cv::Mat R = *[manageCVMat loadCVMat:cv::Size(3,3) WithKey:@"Rarray"];
+    cv::Mat T = *[manageCVMat loadCVMat:cv::Size(1,3) WithKey:@"Tarray"];
+    
+//        cv::Mat R1 , R2 , P1, P2, Q ,mx1 ,my1, mx2,my2 , img1r , img2r, disp;
+//        cv::stereoRectify(*M1, *D1, *M2, *D2, imageSize, *R, *T, R1, R2, P1, P2, Q);
+//        isVerticalStereo = fabs(P2.at<double>(1,3)>P2.at<double>(0,3));
+//        cv::initUndistortRectifyMap(*M1, *D1, R1, P1, imageSize, CV_32FC1, mx1, my1);
+//        cv::initUndistortRectifyMap(*M2, *D2, R2, P2, imageSize, CV_32FC1, mx2, my2);
+//    
+//
+//
+//
+//        cv::remap(*img1, img1r, mx1, my1, CV_INTER_CUBIC);
+//        cv::remap(*img2, *outImg, mx2, my2, CV_INTER_CUBIC);
+
+    
+    enum { STEREO_BM=0, STEREO_SGBM=1, STEREO_HH=2, STEREO_VAR=3 };
+    int SADWindowSize = 0, numberOfDisparities = 0;
+
+    
+    StereoBM bm;
+    StereoSGBM sgbm;
+    StereoVar var;
+    cv::Size img_size = img1->size();
+    
+    cv::Rect roi1, roi2;
+    cv::Mat Q;
+        
+    Mat R1, P1, R2, P2;
+
+        
+    cv::stereoRectify( M1, D1, M2, D2, img_size, R, T, R1, R2, P1, P2, Q, CALIB_ZERO_DISPARITY, -1, img_size, &roi1, &roi2 );
+        
+    Mat map11, map12, map21, map22;
+    cv::initUndistortRectifyMap(M1, D1, R1, P1, img_size, CV_16SC2, map11, map12);
+    cv::initUndistortRectifyMap(M2, D2, R2, P2, img_size, CV_16SC2, map21, map22);
+        
+    cv::Mat img1r, img2r;
+    cv::remap(*img1, img1r, map11, map12, INTER_LINEAR);
+    cv::remap(*img2, img2r, map21, map22, INTER_LINEAR);
+        
+    *img1 = img1r;
+    *img2 = img2r;
+    
+    numberOfDisparities = numberOfDisparities > 0 ? numberOfDisparities : ((img_size.width/8) + 15) & -16;
+    
+    bm.state->roi1 = roi1;
+    bm.state->roi2 = roi2;
+    bm.state->preFilterCap = 31;
+    bm.state->SADWindowSize = SADWindowSize > 0 ? SADWindowSize : 9;
+    bm.state->minDisparity = 0;
+    bm.state->numberOfDisparities = numberOfDisparities;
+    bm.state->textureThreshold = 10;
+    bm.state->uniquenessRatio = 15;
+    bm.state->speckleWindowSize = 100;
+    bm.state->speckleRange = 32;
+    bm.state->disp12MaxDiff = 1;
+
+    Mat disp, disp8;
+    
+    bm(*img1, *img2, disp);
+
+    disp.convertTo(disp8, CV_8U);
+    *outImg = disp8;
+
+    }
+

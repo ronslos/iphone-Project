@@ -18,5 +18,6 @@
 - (IBAction)settingsPressed:(UIButton*)sender;
 -(IBAction)calibratePressed:(UIButton*)sender;
 -(IBAction)connectDevicePressed:(UIButton*)sender;
+-(IBAction)reconstructionPressed:(UIButton*)sender;
 
 @end
