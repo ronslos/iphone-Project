@@ -163,7 +163,7 @@ double calibrateCameras( cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> >
 
 // omer - this function is new. calculates disparity map from left and right images.
 
-void reconstruct(cv::Size imageSize , cv::Mat* img1 , cv::Mat* img2 ,cv::Mat* outImg)
+void createMap(const cv::Size imgSize, cv::Mat &map11 , cv::Mat &map12 , cv::Mat &map21 , cv::Mat &map22 ,cv::Rect &roi1 , cv::Rect &roi2)
 {
     cv::Mat M1 = *[manageCVMat loadCVMat:cv::Size(3,3) WithKey:@"cameraMatrix1"];
     cv::Mat M2 = *[manageCVMat loadCVMat:cv::Size(3,3) WithKey:@"cameraMatrix2"];
@@ -172,19 +172,21 @@ void reconstruct(cv::Size imageSize , cv::Mat* img1 , cv::Mat* img2 ,cv::Mat* ou
     cv::Mat R = *[manageCVMat loadCVMat:cv::Size(3,3) WithKey:@"Rarray"];
     cv::Mat T = *[manageCVMat loadCVMat:cv::Size(1,3) WithKey:@"Tarray"];
     
-//        cv::Mat R1 , R2 , P1, P2, Q ,mx1 ,my1, mx2,my2 , img1r , img2r, disp;
-//        cv::stereoRectify(*M1, *D1, *M2, *D2, imageSize, *R, *T, R1, R2, P1, P2, Q);
-//        isVerticalStereo = fabs(P2.at<double>(1,3)>P2.at<double>(0,3));
-//        cv::initUndistortRectifyMap(*M1, *D1, R1, P1, imageSize, CV_32FC1, mx1, my1);
-//        cv::initUndistortRectifyMap(*M2, *D2, R2, P2, imageSize, CV_32FC1, mx2, my2);
-//    
-//
-//
-//
-//        cv::remap(*img1, img1r, mx1, my1, CV_INTER_CUBIC);
-//        cv::remap(*img2, *outImg, mx2, my2, CV_INTER_CUBIC);
-
+    cv::Size img_size = imgSize;
+    cv::Mat Q;
     
+    Mat R1, P1, R2, P2;
+    
+    
+    cv::stereoRectify( M1, D1, M2, D2, img_size, R, T, R1, R2, P1, P2, Q, CALIB_ZERO_DISPARITY, -1, img_size, &roi1, &roi2 );
+    
+    cv::initUndistortRectifyMap(M1, D1, R1, P1, img_size, CV_16SC2, map11, map12);
+    cv::initUndistortRectifyMap(M2, D2, R2, P2, img_size, CV_16SC2, map21, map22);
+
+}
+
+void reconstruct(cv::Size imageSize , cv::Mat* img1 , cv::Mat* img2 ,cv::Mat* outImg,cv::Mat &map11 , cv::Mat &map12 , cv::Mat &map21 , cv::Mat &map22 ,cv::Rect &roi1 , cv::Rect &roi2)
+{
     enum { STEREO_BM=0, STEREO_SGBM=1, STEREO_HH=2, STEREO_VAR=3 };
     int SADWindowSize = 0, numberOfDisparities = 0;
 
@@ -194,17 +196,7 @@ void reconstruct(cv::Size imageSize , cv::Mat* img1 , cv::Mat* img2 ,cv::Mat* ou
     StereoVar var;
     cv::Size img_size = img1->size();
     
-    cv::Rect roi1, roi2;
-    cv::Mat Q;
-        
-    Mat R1, P1, R2, P2;
 
-        
-    cv::stereoRectify( M1, D1, M2, D2, img_size, R, T, R1, R2, P1, P2, Q, CALIB_ZERO_DISPARITY, -1, img_size, &roi1, &roi2 );
-        
-    Mat map11, map12, map21, map22;
-    cv::initUndistortRectifyMap(M1, D1, R1, P1, img_size, CV_16SC2, map11, map12);
-    cv::initUndistortRectifyMap(M2, D2, R2, P2, img_size, CV_16SC2, map21, map22);
         
     cv::Mat img1r, img2r;
     cv::remap(*img1, img1r, map11, map12, INTER_LINEAR);

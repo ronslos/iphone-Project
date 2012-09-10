@@ -52,6 +52,7 @@ static int TEN_K = 51200/8;
     _totalChunks = 0;
     _secondImg =cv::Mat(_imageSize,CV_8UC3);
     _sessionManager = [SessionManager instance];
+    createMap(_imageSize, _map11, _map12, _map21, _map22, _roi1, _roi2);
     [[_sessionManager mySession ] setDataReceiveHandler:self withContext:nil];
     
     [self showCaptureOnScreen];
@@ -216,7 +217,7 @@ static int TEN_K = 51200/8;
             cv::Mat gray1,gray2;
             cv::cvtColor(_lastFrame, gray1, CV_RGB2GRAY);
             cv::cvtColor(_secondImg, gray2, CV_RGB2GRAY);
-            reconstruct(_imageSize, &gray1, &gray2, &(_depthImg));
+            reconstruct(_imageSize, &gray1, &gray2, &_depthImg, _map11, _map12, _map21, _map22, _roi1, _roi2);
             _notCapturing = NO;
             self.imageView.image = [UIImage imageWithCVMat:_depthImg];
             
