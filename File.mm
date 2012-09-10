@@ -163,7 +163,7 @@ double calibrateCameras( cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> >
 
 // omer - this function is new. calculates disparity map from left and right images.
 
-void createMap(const cv::Size imgSize, cv::Mat &map11 , cv::Mat &map12 , cv::Mat &map21 , cv::Mat &map22 ,cv::Rect &roi1 , cv::Rect &roi2)
+void createMap(const cv::Size imgSize, cv::Mat &Q , cv::Mat &map11 , cv::Mat &map12 , cv::Mat &map21 , cv::Mat &map22 ,cv::Rect &roi1 , cv::Rect &roi2 )
 {
     cv::Mat M1 = *[manageCVMat loadCVMat:cv::Size(3,3) WithKey:@"cameraMatrix1"];
     cv::Mat M2 = *[manageCVMat loadCVMat:cv::Size(3,3) WithKey:@"cameraMatrix2"];
@@ -173,7 +173,6 @@ void createMap(const cv::Size imgSize, cv::Mat &map11 , cv::Mat &map12 , cv::Mat
     cv::Mat T = *[manageCVMat loadCVMat:cv::Size(1,3) WithKey:@"Tarray"];
     
     cv::Size img_size = imgSize;
-    cv::Mat Q;
     
     Mat R1, P1, R2, P2;
     
@@ -185,7 +184,7 @@ void createMap(const cv::Size imgSize, cv::Mat &map11 , cv::Mat &map12 , cv::Mat
 
 }
 
-void reconstruct(cv::Size imageSize , cv::Mat* img1 , cv::Mat* img2 ,cv::Mat* outImg,cv::Mat &map11 , cv::Mat &map12 , cv::Mat &map21 , cv::Mat &map22 ,cv::Rect &roi1 , cv::Rect &roi2)
+void reconstruct(cv::Size imageSize , cv::Mat* img1 , cv::Mat* img2 ,cv::Mat* outImg,cv::Mat &map11 , cv::Mat &map12 , cv::Mat &map21 , cv::Mat &map22 ,cv::Rect &roi1 , cv::Rect &roi2 , cv::Mat &Q)
 {
     enum { STEREO_BM=0, STEREO_SGBM=1, STEREO_HH=2, STEREO_VAR=3 };
     int SADWindowSize = 0, numberOfDisparities = 0;
@@ -224,7 +223,8 @@ void reconstruct(cv::Size imageSize , cv::Mat* img1 , cv::Mat* img2 ,cv::Mat* ou
     bm(*img1, *img2, disp);
 
     disp.convertTo(disp8, CV_8U);
-    *outImg = disp8;
-
+    Mat xyz;
+    reprojectImageTo3D(disp, xyz, Q, true);
+    *outImg = xyz;
     }
 

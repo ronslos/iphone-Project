@@ -16,7 +16,7 @@
     int _totalChunks;
     NSMutableData* _imgData;
     SessionManager* _sessionManager;
-    cv::Mat _map11, _map12, _map21 ,_map22 ;
+    cv::Mat _map11, _map12, _map21 ,_map22 ,_Q;
     cv::Rect _roi1 , _roi2;
 }
 
