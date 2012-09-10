@@ -29,6 +29,7 @@
 bool StereoCalib(cv::Mat img , cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> > (&imagePoints)[2], int numImage , cv::Mat& cornersImg);
 double calibrateCameras( cv::Size boardSize,cv::vector<cv::vector<cv::Point2f> >(& imagePoints)[2], cv::vector<cv::vector<cv::Point3f> >& objectPoints, int numImage , cv::Size imageSize , const float squareSize);
 // omer - decleration of reconstruction function.
-void reconstruct(cv::Size imageSize , cv::Mat* img1 , cv::Mat* img2 ,cv::Mat* outImg);
+void reconstruct(cv::Size imageSize , cv::Mat* img1 , cv::Mat* img2 ,cv::Mat* outImg,cv::Mat &map11 , cv::Mat &map12 , cv::Mat &map21 , cv::Mat &map22 ,cv::Rect &roi1 , cv::Rect &roi2 , cv::Mat &Q);
+void createMap(const cv::Size imgSize, cv::Mat &Q , cv::Mat &map11 , cv::Mat &map12 , cv::Mat &map21 , cv::Mat &map22 ,cv::Rect &roi1 , cv::Rect &roi2 );
 
 #endif
