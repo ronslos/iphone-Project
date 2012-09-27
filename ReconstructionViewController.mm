@@ -48,6 +48,7 @@ static int TEN_K = 51200/8;
     _imageSize = _lastFrame.size();
     _notCapturing = YES;
     _chunksReceived = YES;
+    _pause = NO;
     _chunkCount = 0;
     _totalChunks = 0;
     _secondImg =cv::Mat(_imageSize,CV_8UC3);
@@ -66,8 +67,13 @@ static int TEN_K = 51200/8;
     
     dispatch_async(myQueue, ^{
         while(_notCapturing){
+            if (_pause == YES)
+            {
+                sleep(2);
+            }
             if (_videoCapture && _videoCapture->grab())
             {
+                _pause = NO;
                 (*_videoCapture) >> _lastFrame;
                 dispatch_sync(dispatch_get_main_queue(), ^{
                     self.imageView.image = [UIImage imageWithCVMat:_lastFrame];
@@ -182,6 +188,33 @@ static int TEN_K = 51200/8;
     }
 }
 
+-(void) saveImage:(UIImage *)image {
+
+    NSString *documentsDirectoryPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSInteger imgNum = [[NSUserDefaults standardUserDefaults]integerForKey:@"imageNum" ];
+    [UIImageJPEGRepresentation(image, 1.0) writeToFile:[documentsDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"IMG_%d.%@", imgNum, @"jpg"]] options:NSAtomicWrite error:nil];
+    imgNum++;
+    [[NSUserDefaults standardUserDefaults] setInteger:imgNum forKey:@"imageNum"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+
+}
+
+-(UIImage *) loadImage {
+    NSString *documentsDirectoryPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSInteger imgNum = [[NSUserDefaults standardUserDefaults]integerForKey:@"imageNum" ];
+    imgNum--;
+    UIImage * result = [UIImage imageWithContentsOfFile:[NSString stringWithFormat:@"%@/IMG_%d.%@", documentsDirectoryPath, imgNum ,@"jpg"]];
+    
+    return result;
+}
+
+-(void) displayLastImage{
+    UIImage *image = [self loadImage];
+    _imageView.image = image;
+    _pause = YES;
+    [self showCaptureOnScreen];
+}
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
@@ -218,15 +251,31 @@ static int TEN_K = 51200/8;
             cv::cvtColor(_lastFrame, gray1, CV_RGB2GRAY);
             cv::cvtColor(_secondImg, gray2, CV_RGB2GRAY);
             reconstruct(_imageSize, &gray1, &gray2, &_depthImg, _map11, _map12, _map21, _map22, _roi1, _roi2 ,_Q);
-            _notCapturing = NO;
+            std::vector<cv::Mat> rgbChannels(3);
+            cv::Mat gray3;
+            cv::split(_depthImg, rgbChannels);
+            cv::cvtColor(rgbChannels[0], gray3, CV_GRAY2RGB);
+            _notCapturing = YES;
             self.imageView.image = [UIImage imageWithCVMat:_depthImg];
-            
+            //UIAlertView* alert = [[UIAlertView alloc] initWithTitle:NULL message:@"Would you like to save?" delegate:self cancelButtonTitle:@"Discard" otherButtonTitles:@"save", nil];
+            //[alert show];
+            //[alert release];
+            [self displayLastImage];
         }
     }
 }
 - (void)dealloc {
     [_captureBtn release];
     [super dealloc];
+}
+
+#pragma mark -
+#pragma mark UIAlertViewDelegate
+
+-(void) alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if(buttonIndex==1)
+        [self saveImage:[UIImage imageWithCVMat:_depthImg]];
 }
 
 @end

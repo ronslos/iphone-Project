@@ -225,6 +225,6 @@ void reconstruct(cv::Size imageSize , cv::Mat* img1 , cv::Mat* img2 ,cv::Mat* ou
     disp.convertTo(disp8, CV_8U);
     Mat xyz;
     reprojectImageTo3D(disp, xyz, Q, true);
-    *outImg = xyz;
+    *outImg = disp8;
     }
 

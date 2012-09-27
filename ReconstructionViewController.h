@@ -3,7 +3,7 @@
 #import <AVFoundation/AVCaptureDevice.h>
 // omer - add this class for the reconstruction view controller
 
-@interface ReconstructionViewController : UIViewController <GKPeerPickerControllerDelegate>
+@interface ReconstructionViewController : UIViewController <GKPeerPickerControllerDelegate , UIAlertViewDelegate>
 {
     cv::VideoCapture *_videoCapture;
     cv::Size _imageSize;
@@ -12,6 +12,7 @@
     cv::Mat _depthImg;
     bool _notCapturing;
     bool _chunksReceived;
+    bool _pause;
     int _chunkCount;
     int _totalChunks;
     NSMutableData* _imgData;
